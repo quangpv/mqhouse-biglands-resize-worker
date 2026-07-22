@@ -8,7 +8,6 @@ export interface Env {
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MIN_WIDTH = 50;
 const MAX_WIDTH = 2048;
-const WEBP_QUALITY = 80;
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -37,22 +36,31 @@ export default {
       return new Response("Forbidden", { status: 403 });
     }
 
+    const width = url.searchParams.get("width");
+
+    if (!width) {
+      const response = new Response(object.body, {
+        headers: {
+          "Content-Type": object.httpMetadata?.contentType || "image/webp",
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      return response;
+    }
+
     const inputImage = PhotonImage.new_from_byteslice(inputBytes);
 
-    const width = url.searchParams.get("width");
+    const targetWidth = Math.max(MIN_WIDTH, Math.min(parseInt(width) || 0, MAX_WIDTH));
     let outputImage: PhotonImage;
 
-    if (width) {
-      const targetWidth = Math.max(MIN_WIDTH, Math.min(parseInt(width) || 0, MAX_WIDTH));
-      if (targetWidth >= inputImage.get_width()) {
-        outputImage = inputImage;
-      } else {
-        const scale = targetWidth / inputImage.get_width();
-        const targetHeight = Math.floor(inputImage.get_height() * scale);
-        outputImage = resize(inputImage, targetWidth, targetHeight, SamplingFilter.Lanczos3);
-      }
-    } else {
+    if (targetWidth >= inputImage.get_width()) {
       outputImage = inputImage;
+    } else {
+      const scale = targetWidth / inputImage.get_width();
+      const targetHeight = Math.floor(inputImage.get_height() * scale);
+      outputImage = resize(inputImage, targetWidth, targetHeight, SamplingFilter.Lanczos3);
     }
 
     const outputBytes = outputImage.get_bytes_webp();

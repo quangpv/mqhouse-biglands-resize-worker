@@ -4,15 +4,17 @@ compatibility_date = "2024-09-23"
 
 [[r2_buckets]]
 binding = "IMAGES_BUCKET"
-bucket_name = "cdn-biglands"
+bucket_name = "biglands-prod"
 
 [vars]
 ALLOWED_ORIGINS = "https://biglands.mywire.org"
 
 [env.staging]
 name = "cdn-biglands-staging"
+
 [[env.staging.r2_buckets]]
 binding = "IMAGES_BUCKET"
-bucket_name = "cdn-biglands-staging"
+bucket_name = "biglands"
+
 [env.staging.vars]
 ALLOWED_ORIGINS = "https://localhost:3000"

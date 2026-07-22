@@ -15,11 +15,11 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    const cache = caches.default;
-    const cacheUrl = url.toString() + (url.search ? "&" : "?") + "_cv=" + CACHE_VERSION
-    const cacheKey = new Request(cacheUrl, request)
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
+    // const cache = caches.default;
+    // const cacheUrl = url.toString() + (url.search ? "&" : "?") + "_cv=" + CACHE_VERSION;
+    // const cacheKey = new Request(cacheUrl, request);
+    // const cached = await cache.match(cacheKey);
+    // if (cached) return cached;
 
     const key = url.pathname.slice(1);
     const object = await env.IMAGES_BUCKET.get(key);
@@ -50,7 +50,7 @@ export default {
           "Access-Control-Allow-Origin": "*",
         },
       });
-      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      // ctx.waitUntil(cache.put(cacheKey, response.clone()));
       return response;
     }
 
@@ -82,7 +82,7 @@ export default {
       },
     });
 
-    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    // ctx.waitUntil(cache.put(cacheKey, response.clone()));
     return response;
   },
 } satisfies ExportedHandler<Env>;

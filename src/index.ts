@@ -42,6 +42,7 @@ export default {
       const response = new Response(imageData, {
         headers: {
           "Content-Type": object.httpMetadata?.contentType || "image/webp",
+          "Content-Length": String(imageData.byteLength),
           "Cache-Control": "public, max-age=31536000, immutable",
           "Access-Control-Allow-Origin": "*",
         },
@@ -72,6 +73,7 @@ export default {
     const response = new Response(outputBytes, {
       headers: {
         "Content-Type": "image/webp",
+        "Content-Length": String(outputBytes.byteLength),
         "Cache-Control": "public, max-age=31536000, immutable",
         "Access-Control-Allow-Origin": "*",
       },

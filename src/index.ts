@@ -27,6 +27,18 @@ export default {
       return new Response("Image not found", { status: 404 });
     }
 
+    const isVideo = key.startsWith("videos/");
+    if (isVideo) {
+      const response = new Response(object.body, {
+        headers: {
+          "Content-Type": object.httpMetadata?.contentType || "video/mp4",
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      return response;
+    }
+
     const imageData = await object.arrayBuffer();
     if (imageData.byteLength > MAX_IMAGE_SIZE) {
       return new Response("Image too large", { status: 413 });

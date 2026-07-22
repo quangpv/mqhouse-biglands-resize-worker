@@ -24,8 +24,8 @@ export default {
       return new Response("Image not found", { status: 404 });
     }
 
-    const inputBytes = new Uint8Array(await object.arrayBuffer());
-    if (inputBytes.length > MAX_IMAGE_SIZE) {
+    const imageData = await object.arrayBuffer();
+    if (imageData.byteLength > MAX_IMAGE_SIZE) {
       return new Response("Image too large", { status: 413 });
     }
 
@@ -39,7 +39,7 @@ export default {
     const width = url.searchParams.get("width");
 
     if (!width) {
-      const response = new Response(object.body, {
+      const response = new Response(imageData, {
         headers: {
           "Content-Type": object.httpMetadata?.contentType || "image/webp",
           "Cache-Control": "public, max-age=31536000, immutable",
@@ -50,6 +50,7 @@ export default {
       return response;
     }
 
+    const inputBytes = new Uint8Array(imageData);
     const inputImage = PhotonImage.new_from_byteslice(inputBytes);
 
     const targetWidth = Math.max(MIN_WIDTH, Math.min(parseInt(width) || 0, MAX_WIDTH));

@@ -42,7 +42,7 @@ export default {
     const width = url.searchParams.get("width");
 
     if (!width) {
-      const response = new Response(imageData, {
+      const response = new Response(new Blob([imageData], { type: object.httpMetadata?.contentType || "image/webp" }), {
         headers: {
           "Content-Type": object.httpMetadata?.contentType || "image/webp",
           "Content-Length": String(imageData.byteLength),
@@ -73,7 +73,7 @@ export default {
     inputImage.free();
     if (outputImage !== inputImage) outputImage.free();
 
-    const response = new Response(outputBytes, {
+    const response = new Response(new Blob([outputBytes], { type: "image/webp" }), {
       headers: {
         "Content-Type": "image/webp",
         "Content-Length": String(outputBytes.byteLength),

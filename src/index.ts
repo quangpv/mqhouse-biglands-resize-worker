@@ -57,32 +57,36 @@ export default {
     const inputBytes = new Uint8Array(imageData);
     const inputImage = PhotonImage.new_from_byteslice(inputBytes);
 
-    const targetWidth = Math.max(MIN_WIDTH, Math.min(parseInt(width) || 0, MAX_WIDTH));
-    let outputImage: PhotonImage;
+    let outputImage: PhotonImage | null = null;
+    try {
+      const targetWidth = Math.max(MIN_WIDTH, Math.min(parseInt(width) || 0, MAX_WIDTH));
 
-    if (targetWidth >= inputImage.get_width()) {
-      outputImage = inputImage;
-    } else {
-      const scale = targetWidth / inputImage.get_width();
-      const targetHeight = Math.floor(inputImage.get_height() * scale);
-      outputImage = resize(inputImage, targetWidth, targetHeight, SamplingFilter.Lanczos3);
+      if (targetWidth >= inputImage.get_width()) {
+        outputImage = inputImage;
+      } else {
+        const scale = targetWidth / inputImage.get_width();
+        const targetHeight = Math.floor(inputImage.get_height() * scale);
+        outputImage = resize(inputImage, targetWidth, targetHeight, SamplingFilter.Lanczos3);
+      }
+
+      const outputBytes = outputImage.get_bytes_webp();
+
+      const response = new Response(new Blob([outputBytes], { type: "image/webp" }), {
+        headers: {
+          "Content-Type": "image/webp",
+          "Content-Length": String(outputBytes.byteLength),
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+
+      return response;
+    } catch (err) {
+      console.error("Photon resize failed:", err);
+      return new Response("Image processing failed", { status: 500 });
+    } finally {
+      inputImage.free();
+      if (outputImage && outputImage !== inputImage) outputImage.free();
     }
-
-    const outputBytes = outputImage.get_bytes_webp();
-
-    inputImage.free();
-    if (outputImage !== inputImage) outputImage.free();
-
-    const response = new Response(new Blob([outputBytes], { type: "image/webp" }), {
-      headers: {
-        "Content-Type": "image/webp",
-        "Content-Length": String(outputBytes.byteLength),
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-
-    // ctx.waitUntil(cache.put(cacheKey, response.clone()));
-    return response;
   },
 } satisfies ExportedHandler<Env>;

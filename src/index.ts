@@ -9,12 +9,15 @@ const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MIN_WIDTH = 50;
 const MAX_WIDTH = 2048;
 
+const CACHE_VERSION = "v2"
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     const cache = caches.default;
-    const cacheKey = new Request(url.toString(), request);
+    const cacheUrl = url.toString() + (url.search ? "&" : "?") + "_cv=" + CACHE_VERSION
+    const cacheKey = new Request(cacheUrl, request)
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
 

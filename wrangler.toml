@@ -1,0 +1,6 @@
+name = "cdn-biglands"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+[vars]
+R2_PUBLIC_URL = "https://pub-0f407c7e435b4d35895c736b0b390ef9.r2.dev"
